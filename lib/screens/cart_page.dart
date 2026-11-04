@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 
 import '../controllers/cart_controller.dart';
 import 'checkout_success_page.dart';
+import '../services/order_database.dart';
+
+import 'dart:convert';
 
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
@@ -176,12 +179,40 @@ class CartPage extends StatelessWidget {
                             ),
 
                             ElevatedButton(
-                              onPressed: () {
-                                controller.clearCart();
+                              onPressed: () async {
+                                try {
+                                  // Menyiapkan daftar item pesanan
+                                  final daftarItem = controller.items.map((
+                                    product,
+                                  ) {
+                                    return {
+                                      'nama': product.name,
+                                      'harga': product.price,
+                                      'jumlah': controller.quantityOf(product),
+                                    };
+                                  }).toList();
 
-                                Get.back(); // Tutup dialog konfirmasi
+                                  // Menyimpan pesanan ke SQLite
+                                  await OrderDatabase.instance.insertOrder({
+                                    'tanggal': DateTime.now().toIso8601String(),
+                                    'daftarItem': jsonEncode(daftarItem),
+                                    'totalHarga': controller.totalHarga,
+                                    'status': 'Diproses',
+                                  });
 
-                                Get.off(() => const CheckoutSuccessPage());
+                                  // Kosongkan keranjang setelah pesanan berhasil disimpan
+                                  controller.clearCart();
+
+                                  Get.back();
+
+                                  Get.off(() => const CheckoutSuccessPage());
+                                } catch (e) {
+                                  Get.snackbar(
+                                    'Checkout Gagal',
+                                    'Pesanan tidak berhasil disimpan: $e',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                  );
+                                }
                               },
                               child: const Text('Konfirmasi'),
                             ),

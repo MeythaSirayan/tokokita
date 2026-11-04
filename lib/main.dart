@@ -6,9 +6,15 @@ import 'screens/home_page.dart';
 import 'screens/product_detail_page.dart';
 import 'models/product.dart';
 import 'controllers/cart_controller.dart';
+import 'controllers/favorite_controller.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   Get.put(CartController());
+  final favoriteController = Get.put(FavoriteController());
+
+  await favoriteController.loadFavorites();
+
   runApp(const MyApp());
 }
 

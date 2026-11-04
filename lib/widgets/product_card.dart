@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../models/product.dart';
+import '../controllers/favorite_controller.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
@@ -15,7 +17,7 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
-  bool isFavorite = false;
+  final FavoriteController favoriteController = Get.find<FavoriteController>();
 
   @override
   void initState() {
@@ -27,8 +29,8 @@ class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
     print(
-      '[${widget.product.name}] '
-      'build dipanggil (isFavorite: $isFavorite)',
+      '[${widget.product.name}] build dipanggil '
+      '(isFavorite: ${favoriteController.isFavorite(widget.product.id)})',
     );
 
     return InkWell(
@@ -125,22 +127,22 @@ class _ProductCardState extends State<ProductCard> {
             ),
 
             // TOMBOL FAVORITE
-            IconButton(
-              icon: Icon(
-                isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: isFavorite ? Colors.red : Colors.grey,
-              ),
-              onPressed: () {
-                setState(() {
-                  isFavorite = !isFavorite;
-                });
+            Obx(() {
+              final isFavorite = favoriteController.isFavorite(
+                widget.product.id,
+              );
 
-                print(
-                  '[${widget.product.name}] '
-                  'setState -> isFavorite = $isFavorite',
-                );
-              },
-            ),
+              return IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite ? Colors.red : Colors.grey,
+                ),
+
+                onPressed: () async {
+                  await favoriteController.toggleFavorite(widget.product.id);
+                },
+              );
+            }),
           ],
         ),
       ),

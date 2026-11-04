@@ -337,7 +337,11 @@ class Product {
       price: (json['price'] as num).toDouble(),
       imageUrl: json['image'],
       category: json['category'],
-      stock: json['stock'] ?? 0,
+
+      // Jika API tidak menyediakan stok,
+      // gunakan stok simulasi sebanyak 10.
+      stock: json['stock'] != null ? (json['stock'] as num).toInt() : 10,
+
       description: json['description'],
     );
   }
